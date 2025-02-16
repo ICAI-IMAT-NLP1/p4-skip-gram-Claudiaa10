@@ -22,8 +22,7 @@ def load_and_preprocess_data(infile: str) -> List[str]:
         text = file.read()  # Read the entire file
 
     # Preprocess and tokenize the text
-    # TODO
-    tokens: List[str] = None
+    tokens: List[str] = tokenize(text)
 
     return tokens
 
@@ -38,14 +37,14 @@ def create_lookup_tables(words: List[str]) -> Tuple[Dict[str, int], Dict[int, st
         A tuple containing two dictionaries. The first dictionary maps words to integers (vocab_to_int),
         and the second maps integers to words (int_to_vocab).
     """
-    # TODO
-    word_counts: Counter = None
+    word_counts: Counter = Counter(words)
     # Sorting the words from most to least frequent in text occurrence.
-    sorted_vocab: List[int] = None
+    sorted_vocab: List[int] = sorted(word_counts,key = word_counts.get,reverse = True)
     
     # Create int_to_vocab and vocab_to_int dictionaries.
-    int_to_vocab: Dict[int, str] = None
-    vocab_to_int: Dict[str, int] = None
+    int_to_vocab: Dict[int, str] = {word:n for n, word in enumerate(sorted_vocab)}
+    vocab_to_int: Dict[str, int] = {n:word for n, word in enumerate(sorted_vocab)}
+    
 
     return vocab_to_int, int_to_vocab
 
@@ -69,12 +68,21 @@ def subsample_words(words: List[str], vocab_to_int: Dict[str, int], threshold: f
         List[int]: A list of integers representing the subsampled words, where some high-frequency words may be removed.
         Dict[str, float]: Dictionary associating each word with its frequency.
     """
-    # TODO
     # Convert words to integers
-    int_words: List[int] = None
-    
-    freqs: Dict[str, float] = None
-    train_words: List[str] = None
+    int_words: List[int] = [int(vocab_to_int[word]) for word in words]
+    total_words:int = len(words)
+    word_counts = Counter(words)
+    freqs: Dict[str, float] = {word:count/total_words for word,count in enumerate(word_counts)}
+    prob:Dict[int,float] = {}
+    for word, freq in freqs.items():
+        if freq > threshold:
+            prob[word] = 1 - torch.sqrt(torch.tensor(threshold / freq))
+        else:
+            prob[word] = 0.0
+    train_words: List[str] = []
+    for word in int_words:
+        if torch.rand(1).item() > prob.get(word, 0):
+            train_words.append(word)
 
     return train_words, freqs
 
@@ -90,8 +98,10 @@ def get_target(words: List[str], idx: int, window_size: int = 5) -> List[str]:
     Returns:
         List[str]: A list of words selected randomly within the window around the target word.
     """
-    # TODO
-    target_words: List[str] = None
+    R : int = torch.randint(1,window_size)
+    start:int = max(idx - R, 0)  
+    end:int= min(idx + R + 1, len(words))
+    target_words: List[str] = [words[i] for i in range(start,end)]
 
     return target_words
 
@@ -113,10 +123,13 @@ def get_batches(words: List[int], batch_size: int, window_size: int = 5) -> Gene
         - The first list contains input words (repeated for each of their context words).
         - The second list contains the corresponding target context words.
     """
-
-    # TODO
+    inputs: List[int] = []
+    targets: List[int] = []
     for idx in range(0, len(words), batch_size):
-        inputs, targets: Tuple[List[int], List[int]] = None, None
+        context_words = get_target(words,idx,window_size)
+        for target in context_words:
+            inputs.append(words[idx])
+            targets.append(target)
         yield inputs, targets
 
 def cosine_similarity(embedding: torch.nn.Embedding, valid_size: int = 16, valid_window: int = 100, device: str = 'cpu'):
@@ -140,8 +153,13 @@ def cosine_similarity(embedding: torch.nn.Embedding, valid_size: int = 16, valid
         sim = (a . b) / |a||b| where `a` and `b` are embedding vectors.
     """
 
-    # TODO
-    valid_examples: torch.Tensor = None
-    similarities: torch.Tensor = None
+    valid_examples: torch.Tensor = torch.randint(0, valid_window, (valid_size,), dtype=torch.long, device=device)
+    valid_vectors = embedding(valid_examples)
+    embedding_weights = embedding.weight  
+    embedding_norm = embedding_weights / embedding_weights.norm(dim=1, keepdim=True) 
+    valid_vectors_norm = valid_vectors / valid_vectors.norm(dim=1, keepdim=True)
+    similarities: torch.Tensor = torch.mm(valid_vectors_norm, embedding_norm.T) 
 
     return valid_examples, similarities
+
+  
