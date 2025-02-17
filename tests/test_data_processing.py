@@ -101,7 +101,6 @@ def test_get_target():
 
 
 @pytest.mark.order(5)
-
 def test_get_batches():
     # Example input
     words = list(range(100))  # A simple list of integers as stand-ins for words
@@ -125,7 +124,6 @@ def test_get_batches():
 
     # Additional checks can be made for the contents of inputs and targets
     # to ensure context windows are correctly implemented.
-
 @pytest.mark.order(6)
 def test_cosine_similarity():
     # Create a simple embedding matrix for testing: 1000 embeddings of size 10

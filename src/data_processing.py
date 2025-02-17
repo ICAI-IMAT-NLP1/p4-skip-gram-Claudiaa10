@@ -38,14 +38,14 @@ def create_lookup_tables(words: List[str]) -> Tuple[Dict[str, int], Dict[int, st
         and the second maps integers to words (int_to_vocab).
     """
     word_counts: Counter = Counter(words)
+    print(word_counts)
     # Sorting the words from most to least frequent in text occurrence.
     sorted_vocab: List[int] = sorted(word_counts,key = word_counts.get,reverse = True)
-    
+    print(sorted_vocab)
     # Create int_to_vocab and vocab_to_int dictionaries.
-    int_to_vocab: Dict[int, str] = {word:n for n, word in enumerate(sorted_vocab)}
-    vocab_to_int: Dict[str, int] = {n:word for n, word in enumerate(sorted_vocab)}
+    int_to_vocab: Dict[int, str] = { n:word for n, word in enumerate(sorted_vocab)}
+    vocab_to_int: Dict[str, int] = {word:n for n, word in enumerate(sorted_vocab)}
     
-
     return vocab_to_int, int_to_vocab
 
 
@@ -71,7 +71,8 @@ def subsample_words(words: List[str], vocab_to_int: Dict[str, int], threshold: f
     # Convert words to integers
     int_words: List[int] = [int(vocab_to_int[word]) for word in words]
     total_words:int = len(words)
-    word_counts = Counter(words)
+    word_counts = Counter(int_words)
+    print("counts", word_counts)
     freqs: Dict[str, float] = {word:count/total_words for word,count in enumerate(word_counts)}
     prob:Dict[int,float] = {}
     for word, freq in freqs.items():
@@ -98,14 +99,14 @@ def get_target(words: List[str], idx: int, window_size: int = 5) -> List[str]:
     Returns:
         List[str]: A list of words selected randomly within the window around the target word.
     """
-    R : int = torch.randint(1,window_size)
+    R : int = torch.randint(1, window_size, (1,)).item()
     start:int = max(idx - R, 0)  
     end:int= min(idx + R + 1, len(words))
-    target_words: List[str] = [words[i] for i in range(start,end)]
+    target_words: List[str] = [words[i] for i in range(start,end) if i != idx]
 
     return target_words
 
-def get_batches(words: List[int], batch_size: int, window_size: int = 5) -> Generator[Tuple[List[int], List[int]]]:
+def get_batches(words: List[int], batch_size: int, window_size: int = 5):
     """Generate batches of word pairs for training.
 
     This function creates a generator that yields tuples of (inputs, targets),
