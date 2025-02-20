@@ -38,10 +38,8 @@ def create_lookup_tables(words: List[str]) -> Tuple[Dict[str, int], Dict[int, st
         and the second maps integers to words (int_to_vocab).
     """
     word_counts: Counter = Counter(words)
-    print(word_counts)
     # Sorting the words from most to least frequent in text occurrence.
     sorted_vocab: List[int] = sorted(word_counts,key = word_counts.get,reverse = True)
-    print(sorted_vocab)
     # Create int_to_vocab and vocab_to_int dictionaries.
     int_to_vocab: Dict[int, str] = { n:word for n, word in enumerate(sorted_vocab)}
     vocab_to_int: Dict[str, int] = {word:n for n, word in enumerate(sorted_vocab)}
@@ -72,7 +70,6 @@ def subsample_words(words: List[str], vocab_to_int: Dict[str, int], threshold: f
     int_words: List[int] = [int(vocab_to_int[word]) for word in words]
     total_words:int = len(words)
     word_counts = Counter(int_words)
-    print("counts", word_counts)
     freqs: Dict[str, float] = {word:count/total_words for word,count in enumerate(word_counts)}
     prob:Dict[int,float] = {}
     for word, freq in freqs.items():
