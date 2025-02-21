@@ -123,10 +123,21 @@ class NegativeSamplingLoss(nn.Module):
         """
 
         # Compute log-sigmoid loss for correct classifications
-        out_loss = torch.log(torch.sigmoid(torch.sum(input_vectors * output_vectors, dim=1) + 1e-10))
+        #out_loss = torch.log(torch.sigmoid(torch.sum(input_vectors * output_vectors, dim=1) + 1e-10))
 
         # Compute log-sigmoid loss for incorrect classifications
-        noise_loss = torch.sum(torch.log(torch.sigmoid(-torch.bmm(noise_vectors, input_vectors.unsqueeze(2)).squeeze(2)) + 1e-10), dim=1)
+        #noise_loss = torch.sum(torch.log(torch.sigmoid(-torch.bmm(noise_vectors, input_vectors.unsqueeze(2)).squeeze(2)) + 1e-10), dim=1)
 
         # Return the negative sum of the correct and noisy log-sigmoid losses, averaged over the batch
-        return -torch.mean(out_loss + noise_loss)
+        #return -torch.mean(out_loss + noise_loss)
+        pos_scores = torch.sum(input_vectors * output_vectors, dim=1)  
+
+        # Compute dot product similarity for negative samples using torch.bmm
+        neg_scores = torch.bmm(noise_vectors, input_vectors.unsqueeze(2)).squeeze(2) 
+
+        # Compute log-sigmoid loss
+        pos_loss = torch.log(torch.sigmoid(pos_scores) + 1e-10) 
+        neg_loss = torch.sum(torch.log(torch.sigmoid(-neg_scores) + 1e-10), dim=1)  
+
+        # Compute final loss
+        return -torch.mean(pos_loss + neg_loss)

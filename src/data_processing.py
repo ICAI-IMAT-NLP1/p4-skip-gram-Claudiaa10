@@ -70,7 +70,7 @@ def subsample_words(words: List[str], vocab_to_int: Dict[str, int], threshold: f
     int_words: List[int] = [int(vocab_to_int[word]) for word in words]
     total_words:int = len(words)
     word_counts = Counter(int_words)
-    freqs: Dict[str, float] = {word:count/total_words for word,count in enumerate(word_counts)}
+    freqs: Dict[str, float] = {word:count/total_words for word,count in word_counts.items()}
     prob:Dict[int,float] = {}
     for word, freq in freqs.items():
         if freq > threshold:

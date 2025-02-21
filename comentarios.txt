@@ -1,0 +1,1 @@
+En el plot del modelo, se puede ver que hay palabras como place y where que están cerca entre sí, ya que tienen una relación más estrecha que palabras como por ejemplo written y country que se encuentran muy lejos.
